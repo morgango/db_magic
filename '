@@ -6,7 +6,6 @@ from IPython.core.magic_arguments import (argument, magic_arguments, parse_argst
 
 import pyodbc
 import logging
-from inspect import stack
 
 @magics_class
 class DbMagic(Magics):
@@ -26,11 +25,11 @@ class DbMagic(Magics):
     @argument('-d', '--disconnect', '--dis', help='Disconnect from this datbase', action="store_true")
     @argument('-t', '--type', help='Connection type (ODBC is the default)', action="store", default="odbc")
     @argument('-l', '--list', help='List things about the database.', action="store", nargs='?')
-    @argument('-e', '--execute', '--exec', help='Some SQL to execute', action="store_true")
+    @argument('-e', '--execute', '--exec', help='Some SQL to execute', action="store",nargs='*')
     @argument('-m', '--commit', help='Commit this transaction.', action="store_true")
-    @argument('-r', '--rollback', help='Rollback this transaction.', action="store_true")
     @argument('-n', '--naked', help='Run a naked query (same as --connect --execute --fetch --disconnect)', action="store_true")
     @argument('--unsourced', help='Run an unsourced query (same as --connect --execute --fetch --disconnect)', action="store_true")
+    @argument('-r', '--rollback', help='Rollback this transaction.', action="store_true")
     @argument('-f', '--fetch', help='Fetch one or more records (default is all)', action="store", default=0,nargs='?')
     @argument('-u', '--uid', '--username', help='The user name to use (optional).', action="store", default='')
     @argument('-p', '--pwd', '--password', help='The password to use (optional).', action="store", default='')
@@ -38,9 +37,6 @@ class DbMagic(Magics):
     @argument('-v', '--verbose', help='Display debugging verbosely (same as --debug=DEBUG', action="store_true")
     @argument('--debug', help='Output debugging info', action="store", default='WARNING',nargs='?')
     @argument('-y', '--dry_run', '--dry', help='Make this a dry run', action="store_true")
-    @argument('--explain', help='Give an explanation on exac', action="store_true")
-    @argument('--note', help='Add a note for help with debugging', action="store", nargs="*")
-    @argument('--cleanup', help='Clean up all the connections and shut down', action="store_true")
 
     def parse_args(self,magic_args):
         """
@@ -48,14 +44,14 @@ class DbMagic(Magics):
 
         Everything is pretty straightforward here except for special convienence cases
        
-        %db <source> <cmd>    [or a naked query]
-        %db <cmd>             [or an unsourced query]
+        %db <source> <cmd> <--options>
+        %db <cmd> <--options>
 
        This is how most users would expect to call the function.  However, this means we
        have to infer a hell of a lot of things based on very little information.
        
         There are also a few challenges here:
-          1. The cmd argument can be multiple words, or empty.
+          1. The cmd argument can be multiple words.
           2. The source argument is optional, if we just have cmd then we need to find source.
           3. The options are all optional, so we need to interpret what is really meant.
 
@@ -76,10 +72,8 @@ class DbMagic(Magics):
 
         logging.debug(' -- The parsed arguments are: %s' % self._args)
 
-        #############################################################################
         # the key/value store uses the alias, so if there isn't one just set it
         # to the source so we have a uniform way of dealing with things
-        #############################################################################
         if self._args.alias is None:
             logging.debug(" --- No alias provided, using %s" % (self._args.source))
             no_alias_provided = True
@@ -90,7 +84,6 @@ class DbMagic(Magics):
         connection_cmd = ' '.join(self._args.cmd)
         connection_fetch = self._args.fetch
 
-        ##############################################################################
         # handling the special situation of %db <source> <cmd> (or a NAKED QUERY)
         #
         # We know that we:
@@ -107,15 +100,9 @@ class DbMagic(Magics):
         #   %db <source> <cmd> --connect --skip 10 --fetch --disconnect
         #
         # we can rely on the fact that things will be handled properly.
-        ##############################################################################
 
         imply_naked_query =  \
             (self._args.source is not None) and \
-            (self._args.source in \
-                self.list_values( \
-                    self._args.alias,  \
-                    self._args.type, \
-                    'sources')) and \
             (self._args.cmd is not None) and \
             (len(self._args.cmd) > 0) and \
             (connection_key not in self._conn_info.keys()) and \
@@ -124,52 +111,20 @@ class DbMagic(Magics):
                 not self._args.connect and \
                 not self._args.execute and \
                 not self._args.disconnect )
-
-        # print (self._args.source is not None) 
-        # print (self._args.source in self.list_values( self._args.alias, self._args.type, 'sources')) 
-        # print (self._args.cmd is not None) 
-        # print (len(self._args.cmd) > 0) 
-        # print (connection_key not in self._conn_info.keys())  
-        # print (self._args.list is None) 
-        # print (no_alias_provided)
-        # print (self._args.connect) 
-        # print (self._args.execute) 
-        # print (self._args.disconnect)
-        # print (imply_naked_query)
-
-            
+        
         if (self._args.naked or imply_naked_query ):
             logging.debug(" --- This is a naked query with source '%s' and cmd '%s'" %(connection_alias, connection_cmd))
             self._args.naked = True
-            self._args.fetch = 'all'
-            connection_fetch = 'all'
-            logging.debug(" --- Changing fetch to %s" % (self._args.fetch))
         else:
             logging.debug(' --- This is not a naked query')
 
-        ##############################################################################
         # handling the special situation of %db <cmd> (or an UNSOURCED QUERY)
-        #
-        # We know that we:
-        #
-        # 1. Will have our positional arguments (either source and cmd or just cmd) defined.
-        # 2. Will have an existing connection with the same name.
-        # 3. Will NOT have connection-specific options (like alias, connect, execute, disconnect)
-        # 4. May have record-filtering options (like fetch and skip)
-        # 5. May have incidental options(like debug, user, pass)
-        #
-        ##############################################################################
         imply_unsourced_query =  \
             (self._args.source is not None) and \
-            (self._args.source not in \
-                self.list_values( \
-                    self._args.alias,  \
-                    self._args.type, \
-                    'sources')) and \
-            (self._args.cmd is not None) and \
+            (self._args.cmd is None) and \
+            (connection_key not in self._conn_info.keys()) and \
             (self._args.list is None) and \
             (no_alias_provided and \
-                not self._args.cleanup and \
                 not self._args.connect and \
                 not self._args.execute and \
                 not self._args.disconnect )
@@ -177,58 +132,25 @@ class DbMagic(Magics):
         if (imply_unsourced_query ):
             logging.debug(" --- This is an unsourced query with source '%s' and cmd '%s'" %(connection_alias, connection_cmd))
             self._args.unsourced = True
-            self._args.fetch = 'all'
-            connection_fetch = 'all'
-            logging.debug(" --- Changing fetch to %s " % (self._args.fetch))
         else:
-            logging.debug(' --- This is not a unsourced query')
+            logging.debug(' --- This is not a naked query')
 
         if connection_key not in self._conn_info.keys() and \
-                not self._args.naked and \
-                not self._args.unsourced:
+                not self._args.naked:
             # this is not a new connection and not an established source, we assume 
             # this is a command line like %db <exec> and fix the command
             try:
+                logging.debug(" --- Merging %s and %s" % (connection_key, self._args.cmd))
                 self._args.cmd.insert(0,connection_key)
-                connection_cmd = ' '.join(self._args.cmd)
-                logging.debug(" --- Merging %s and %s into '%s'" % (connection_key, self._args.cmd, connection_cmd))
             except:
                 pass
 
-        if self._args.unsourced:
-
-            if len(self._args.cmd) > 0:
-                self._args.cmd.insert(0,connection_key)
-                connection_cmd = ' '.join(self._args.cmd)
-                logging.debug(" --- Merging %s and %s into '%s'" % (connection_key, self._args.cmd, connection_cmd))
-
-            logging.debug(" ---Assigning alias from the default as %s" % (self._default_conn_alias))
-            self._args.alias = self._default_conn_alias
-            connection_alias = self._args.alias
-
-            logging.debug(" ---Assigning source from the default as %s" % (self._default_conn_alias))
-            self._args.source = self._default_conn_alias
-            connection_key = self._args.source
-
-        ##############################################################################
         # make it so we can make a connection, then assume that we are using the same alias
         # until we specify a different one
-        ##############################################################################
-        if connection_alias == '' or connection_alias is None:
+        if connection_alias == '':
             connection_alias =  self._most_recent_conn_alias
             logging.debug(" --- Setting current alias to %s" % (connection_alias))
 
-        ##############################################################################
-        # make it so that if there is a command it will be executed, regardless of interpretation.
-        ##############################################################################
-        if len(connection_cmd) > 1:
-            logging.debug(" --- Command is %s, setting execute to True" % connection_cmd)
-            self._args.execute = True
-
-
-        ##############################################################################
-        # set up logging for this particular run
-        ##############################################################################
         if self._args.debug is None or \
                 self._args.debug.lower() == 'debug' or \
                 self._args.verbose:
@@ -243,46 +165,9 @@ class DbMagic(Magics):
             logging.getLogger().setLevel(logging.CRITICAL)
         else:
             logging.getLogger().setLevel(logging.INFO)
-            logging.debug(" --- The debug level '%s' is not valid, using INFO." % self._args.debug)
+            logging.error(" --- The debug level '%s' is not valid, using INFO." % self._args.debug)
 
         return connection_alias, connection_key, connection_cmd, connection_fetch, self._args
-
-    def explain(self, alias, key, cmd, fetch, args, line):
-        """
-        Explains the operations that are going to be done as part of the command line invocation
-
-        :param alias: the plain english name to associate with this connection
-        :param type: the type of connection to use
-        :param key: the key that will be used to find the correct connection.
-        :param cmd: the command that will be executed 
-        :param fetch: the argument for fetching data or not
-        :param args: all the arguments passed to the class
-        :param line: the command line used to call the class
-
-        """
-
-        # identify the raw
-        print("Command Line called : %%db %s" % line)
-        print("-------------------")
-        print("Data Source to Use: %s" % args.source)
-        print("Data Source Type: %s" % args.type)
-        print("Data Source Alias: %s" % alias)
-        print("Command to Execute: %s" % cmd)
-        print("Execution Notes: %s" % str(args.note))
-        print("-------------------")
-        print("Open Connections: %s" % self._conn_info)
-        print("-------------------")
-        print("Is this a Naked Query?: %s" % args.naked)
-        print("Is this a Unsourced Query?: %s" % args.unsourced)
-        print("-------------------")
-        print("Are we Connecting to DB?: %s" % (args.connect or args.naked))
-        print("Are we Commiting Transaction?: %s" % (args.commit))
-        print("Are we Fetching records?: %s" % fetch)
-        print("Are we Listing values?: %s" % args.list)
-        print("Are we Disconnecting from DB?: %s" % (args.disconnect or args.naked))
-        print("=========================================================")
-
-        return
 
     def is_registered(self, alias):
         """
@@ -321,8 +206,8 @@ class DbMagic(Magics):
         logging.debug(" -- Working with connection '%s' of type '%s'" % (connection_alias, connection_type))
 
         if self.is_registered(connection_alias):
-            raise Exception(stack()[0][3], \
-                " --- There is already a connection with the alias %s" % connection_alias)
+            logging.error(" --- There is already a connection with the alias %s" % connection_alias)
+            return
 
         logging.debug(" --- Working with connection '%s' of type '%s'" % (connection_alias, connection_type))
 
@@ -361,8 +246,7 @@ class DbMagic(Magics):
 
         else:
             
-            raise Exception(stack()[0][3], \
-                    "The type provided ('%s') is not valid.  No connection made" % connection_type)
+            logging.error(" -- The type provided ('%s') is not valid.  No connection made" % connection_type)
 
     def disconnect_from_source(self, connection_alias, connection_type):
         """
@@ -378,7 +262,8 @@ class DbMagic(Magics):
         if connection_type.lower() == 'odbc':
 
             if not self.is_registered(connection_alias):
-                raise Exception(stack()[0][3], "There is noconnection with the alias %s" % connection_alias)
+                logging.error(" --- There is no connection with the alias %s" % connection_alias)
+                return
             
             try:
                 logging.debug(" --- Attempting to disconnect from %s " % (connection_alias))
@@ -404,8 +289,7 @@ class DbMagic(Magics):
 
         else:
             
-            raise Exception(stack()[0][3], \
-                    "The type provided ('%s') is not valid.  No connection made" % connection_type)
+            logging.error("The type provided ('%s') is not valid.  No connection made" % connection_type)
 
     def execute_command(self, connection_alias, connection_type, command, fetch):
         """
@@ -428,26 +312,25 @@ class DbMagic(Magics):
                 logging.debug(" --- Executing '%s' on '%s'" % (command, connection_alias))
 
                 if not self.is_connected(connection_alias):
-                    raise Exception(stack()[0][3], "There is no connection with the alias %s" % connection_alias)
+                    logging.error(" --- The alias '%s' is not connected" % connection_alias)
+                    return
 
-                if len(command) > 0:
-                    try:
-                        logging.debug(" --- Attempting to execute '%s' on '%s'" % (command, connection_alias))
-                        cursor = self._conn_info[connection_alias]['cursor']
-                        cursor.execute(command)
-                    except pyodbc.Error, err:
-                        logging.error(err[1])
-                        raise err
-                else:
-                        logging.debug(" --- Skipping empty command.")
-                    
+                try:
+                    logging.debug(" --- Attempting to execute '%s' on '%s'" % (command, connection_alias))
+                    cursor = self._conn_info[connection_alias]['cursor']
+                    cursor.execute(command)
+
+                except pyodbc.Error, err:
+                    logging.error(err[1])
+                    raise err
+
             else:
 
-                raise Exception(stack()[0][3], "The connection '%s' is not registered" % connection_alias)
+                logging.error("This connection is not registered.")
 
         else:
             
-                raise Exception(stack()[0][3], "The type provided ('%s') is not valid.  No connection made" % connection_type)
+            logging.error(" -- The type provided ('%s') is not valid.  No connection made" % connection_type)
 
 
     def fetch(self, connection_alias, connection_type, fetch):
@@ -476,6 +359,9 @@ class DbMagic(Magics):
                 cursor = self._conn_info[connection_alias]['cursor']
                 description = []
 
+                #for line in cursor.description:
+                #    description
+
                 if (isinstance(fetch, str) or isinstance(fetch, unicode)) and 'all' in fetch:
                     logging.debug(" ---- Running cursor.fetchall()")
                     return cursor.fetchall()
@@ -488,17 +374,16 @@ class DbMagic(Magics):
                 else:
                     logging.debug(" ---- '%s' is an invalid number of rows to fetch" % fetch)
 
-            except pyodbc.ProgrammingError, err:
-                logging.warning(err)
-                pass
+            except pyodbc.ProgrammingError:
+                logging.debug("---- There are no records to return from fetch")
             except pyodbc.Error, err:
                 logging.error(err)
                 raise err
 
+
         else:
             
-            raise Exception(stack()[0][3], \
-                    "The type provided ('%s') is not valid.  No connection made" % connection_type)
+            logging.error("The type provided ('%s') is not valid.  No connection made" % connection_type)
 
     def commit(self, connection_alias, connection_type):
         """
@@ -532,8 +417,7 @@ class DbMagic(Magics):
 
         else:
             
-            raise Exception(stack()[0][3], \
-                    "The type provided ('%s') is not valid.  No connection made" % connection_type)
+            logging.error("The type provided ('%s') is not valid.  No connection made" % connection_type)
 
     def list_values(self, connection_alias, connection_type,list_value):
         """
@@ -556,7 +440,6 @@ class DbMagic(Magics):
 
             try:
 
-                logging.debug(" --- The list value is '%s'" % list_value)
                 results = []
 
                 if list_value == 'tables':
@@ -582,9 +465,8 @@ class DbMagic(Magics):
 
                 else:
             
-                    raise Exception(stack()[0][3], "The list value provided ('%s') is not valid.  No connection made" % list_value)
+                    logging.error("The list value provided ('%s') is not valid.  No connection made" % list_value)
 
-                logging.debug(" --- Listing '%s'" % results)
                 return results
 
             except pyodbc.Error, err:
@@ -593,8 +475,7 @@ class DbMagic(Magics):
 
         else:
             
-            raise Exception(stack()[0][3], \
-                    "The type provided ('%s') is not valid.  No connection made" % connection_type)
+            logging.error(" -- The type provided ('%s') is not valid.  No connection made" % connection_type)
 
     @line_magic('db')
     def lmagic(self, line):
@@ -603,12 +484,8 @@ class DbMagic(Magics):
         results = None
         #logging.getLogger().setLevel(logging.ERROR)
 
-        logging.info(' - Starting parsing process')
         # parse the command line arguments and return the most important things:
         alias, key, cmd, fetch, args = self.parse_args(line)
-
-        if args.explain:
-            self.explain(alias, key, cmd, fetch, args,line)
 
         # The order of these commands are VERY important, as when a command is run
         # "naked" or "unsourced" it will scroll through these in order.  It is
@@ -618,19 +495,11 @@ class DbMagic(Magics):
             logging.info(' - Starting connection process')
             self.connect_to_source(alias,args.type, key, args.uid, args.pwd)
 
-        if (args.execute or \
-                args.naked or \
-                args.unsourced) and \
-                (len(cmd) > 0):
-
-            logging.info(' - Starting execution process with "%s"' %cmd)
+        if args.execute or len(cmd) > 0 or args.naked:
+            logging.info(' - Starting execution process')
             self.execute_command(alias, args.type, cmd, fetch)
 
-        if args.list is not None:
-            logging.info(' - Starting list process')
-            results = self.list_values(alias, args.type, args.list)
-
-        if args.fetch == 'all' or args.fetch > 0 or args.naked or args.unsourced:
+        if args.fetch == 'all' or args.fetch > 0 or args.naked:
 
             logging.info('Starting fetch process')
             results = self.fetch(alias, args.type, fetch)
@@ -640,16 +509,17 @@ class DbMagic(Magics):
             logging.info(' - Starting commit process')
             self.commit(alias, args.type)
 
+        if args.list is not None:
+            logging.info(' - Starting list process')
+            results = self.list_values(alias, args.type, args.list)
+
         if args.disconnect or args.naked:
             logging.info(' - Starting disconnect process')
             self.disconnect_from_source(alias, args.type)
 
-        if not args.naked or args.unsourced:
+        if not args.naked:
             self._most_recent_conn_alias = alias
-
-        if  args.cleanup:
-            self.cleanup()
-
+            
         if results is not None:
             logging.debug(' - Returning resultset')
             return results
@@ -662,38 +532,27 @@ class DbMagic(Magics):
     @cell_magic('db')
     def cmagic(self, line, cell):
         "my cell magic"
-        #line = self.lmagic(line + ' ' + ''.join(cell).replace('\n', ' ').replace('\t',''))
-        line = self.lmagic(line + ' ' + ''.join(cell).replace('\n', ' '))
-        return line
+        print("Did cell magic")
+        print (line,cell)
+        return line, cell
 
-    def cleanup(self):
+    def close_all(self):
         " shutting down all connections properly"
 
         logging.info("Closing all connections")
 
-        shutdown_had_problems = False
-
         for alias in self._conn_info.keys():
-            try:
-                logging.debug("Closing %s" % alias)
-                self.disconnect_from_source(alias,self._conn_info[alias]['type'])
-            except err:
-                logging.warning(" - There was a problem shutting down %s" % alias)
-                shutdown_had_problems = True
+            logging.debug("Closing %s" % alias)
+            self.disconnect_from_source(alias,self._conn_info[alias]['type'])
 
-            if shutdown_had_problems:
-                raise Exception(stack()[0][3], \
-                        "The list value provided ('%s') is not valid.  No connection made" % list_value)
-
-            
     def __del__(self):
-        self.cleanup()
+        self.close_all()
 
     @line_magic
     def unload_ext(self, module_str):
         """Unload an IPython extension by its module name."""
         logging.info("Unloading extension")
-        self.cleanup()
+        self.close_all()
         self.shell.extension_manager.unload_extension(module_str)
 
 # In order to actually use these magics, you must register them with a
