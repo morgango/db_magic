@@ -168,7 +168,7 @@ class DbMagic(Magics):
             connection_fetch = 'all'
             logging.debug(" --- Changing fetch to %s " % (self._args.fetch))
         else:
-            logging.debug(' --- This is not a unsourced query')
+            logging.debug(" --- This is NOT unsourced query with source '%s' and cmd '%s'" %(connection_alias, connection_cmd))
 
         if connection_key not in self._conn_info.keys() and \
                 not self._args.naked and \
@@ -176,9 +176,14 @@ class DbMagic(Magics):
             # this is not a new connection and not an established source, we assume 
             # this is a command line like %db <exec> and fix the command
             try:
-                self._args.cmd.insert(0,connection_key)
-                connection_cmd = ' '.join(self._args.cmd)
-                logging.debug(" --- Merging %s and %s into '%s'" % (connection_key, self._args.cmd, connection_cmd))
+                if self._args.connect:
+                    self._args.cmd = self_args.cmd[1:]
+                    connection_cmd = ' '.join(self._args.cmd)
+                    logging.debug(" --- Removing %s from %s into '%s'" % (connection_key, self._args.cmd, connection_cmd))
+                else:
+                    self._args.cmd.insert(0,connection_key)
+                    connection_cmd = ' '.join(self._args.cmd)
+                    logging.debug(" --- Merging %s and %s into '%s'" % (connection_key, self._args.cmd, connection_cmd))
             except:
                 pass
 
@@ -249,6 +254,8 @@ class DbMagic(Magics):
         """
 
         print("Command Line called : %%db %s" % line)
+        print("-------------------")
+        print("Args Parsed: %s" % args)
         print("-------------------")
         print("Data Source to Use: %s" % args.source)
         print("Data Source Type: %s" % args.type)
@@ -585,36 +592,38 @@ class DbMagic(Magics):
     @line_magic('db')
     def lmagic(self, line):
         """
-            @argument('source', type=str, help='The identifier of the data source (optional)',default='', nargs='?')
-            @argument('cmd', type=str, help='A command to be executed (optional)',default='', nargs='*')
-            @argument('-src', '--source', help='The data source to use (optional).', action="store")
-            @argument('-a', '--alias', help='The key to refer to this connection with', action="store")
-            @argument('-def', '--default', help='The key to refer to this connection with', action="store")
-            @argument('-c', '--connect', '--conn', help='Connect to this database', action="store_true")
-            @argument('-d', '--disconnect', '--dis', help='Disconnect from this datbase', action="store_true")
-            @argument('-t', '--type', help='Connection type (ODBC is the default)', action="store", default="odbc")
-            @argument('-l', '--list', help='List things about the database.', action="store", nargs='?')
-            @argument('-e', '--execute', '--exec', help='Some SQL to execute', action="store_true")
-            @argument('-m', '--commit', help='Commit this transaction.', action="store_true")
-            @argument('-r', '--rollback', help='Rollback this transaction.', action="store_true")
-            @argument('-n', '--naked', help='Run a naked query (same as --connect --execute --fetch --disconnect)', action="store_true")
-            @argument('--unsourced', help='Run an unsourced query (same as --connect --execute --fetch --disconnect)', action="store_true")
-            @argument('-f', '--fetch', help='Fetch one or more records (default is all)', action="store", default=0,nargs='?')
-            @argument('-u', '--uid', '--username', help='The user name to use (optional).', action="store", default='')
-            @argument('-p', '--pwd', '--password', help='The password to use (optional).', action="store", default='')
-            @argument('-h', '--help', help='Display help.', action="store_true")
-            @argument('-v', '--verbose', help='Display debugging verbosely (same as --debug=DEBUG', action="store_true")
-            @argument('--debug', help='Output debugging info', action="store", default='WARNING',nargs='?')
-            @argument('-y', '--dry_run', '--dry', help='Make this a dry run', action="store_true")
-            @argument('--explain', help='Give an explanation on exac', action="store_true")
-            @argument('--note', help='Add a note for help with debugging', action="store", nargs="*")
-            @argument('--cleanup', help='Clean up all the connections and shut down', action="store_true")
+        A magic to allow access to data stores using native syntax (such as SQL).
+
+            ARGUMENT, OPTIONS
+            --------  ---------
+            'source', type=str, help='The identifier of the data source (optional)',default='', nargs='?'
+            'cmd', type=str, help='A command to be executed (optional)',default='', nargs='*'
+            '-src', '--source', help='The data source to use (optional).', action="store"
+            '-a', '--alias', help='The key to refer to this connection with', action="store"
+            '-def', '--default', help='The key to refer to this connection with', action="store"
+            '-c', '--connect', '--conn', help='Connect to this database', action="store_true"
+            '-d', '--disconnect', '--dis', help='Disconnect from this datbase', action="store_true"
+            '-t', '--type', help='Connection type (ODBC is the default)', action="store", default="odbc"
+            '-l', '--list', help='List things about the database.', action="store", nargs='?'
+            '-e', '--execute', '--exec', help='Some SQL to execute', action="store_true"
+            '-m', '--commit', help='Commit this transaction.', action="store_true"
+            '-r', '--rollback', help='Rollback this transaction.', action="store_true"
+            '-n', '--naked', help='Run a naked query (same as --connect --execute --fetch --disconnect)', action="store_true"
+            '--unsourced', help='Run an unsourced query (same as --connect --execute --fetch --disconnect)', action="store_true"
+            '-f', '--fetch', help='Fetch one or more records (default is all)', action="store", default=0,nargs='?'
+            '-u', '--uid', '--username', help='The user name to use (optional).', action="store", default=''
+            '-p', '--pwd', '--password', help='The password to use (optional).', action="store", default=''
+            '-h', '--help', help='Display help.', action="store_true"
+            '-v', '--verbose', help='Display debugging verbosely (same as --debug=DEBUG', action="store_true"
+            '--debug', help='Output debugging info', action="store", default='WARNING',nargs='?'
+            '-y', '--dry_run', '--dry', help='Make this a dry run', action="store_true"
+            '--explain', help='Give an explanation on exac', action="store_true"
+            '--note', help='Add a note for help with debugging', action="store", nargs="*"
+            '--cleanup', help='Clean up all the connections and shut down', action="store_true"
         """
         results = None
-        #logging.getLogger().setLevel(logging.ERROR)
 
         logging.info(' - Starting parsing process')
-        # parse the command line arguments and return the most important things:
         alias, key, cmd, fetch, args = self.parse_args(line)
 
         if args.explain or args.dry_run:
@@ -623,9 +632,11 @@ class DbMagic(Magics):
             if args.dry_run:
                 return
 
+        ##############################################################################
         # The order of these commands are VERY important, as when a command is run
         # "naked" or "unsourced" it will scroll through these in order.  It is
         # critically imporant that you keep them in a logical order for database connections.
+        ##############################################################################
 
         if args.connect or args.naked:
             logging.info(' - Starting connection process')
@@ -675,7 +686,6 @@ class DbMagic(Magics):
     @cell_magic('db')
     def cmagic(self, line, cell):
         "my cell magic"
-        #line = self.lmagic(line + ' ' + ''.join(cell).replace('\n', ' ').replace('\t',''))
         line = self.lmagic(line + ' ' + ''.join(cell).replace('\n', ' '))
         return line
 
