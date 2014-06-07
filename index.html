@@ -19,7 +19,7 @@
 
         <header>
           <h1>DB Magic</h1>
-          <h2>Making SQL native to iPython</h2>
+          <h2>Making iPython talk to data</h2>
         </header>
 
         <section id="downloads" class="clearfix">
@@ -31,13 +31,109 @@
         <hr>
 
         <section id="main_content">
-          <h1>
-<a name="db_magic" class="anchor" href="#db_magic"><span class="octicon octicon-link"></span></a>db_magic</h1>
+          <h2>
+<a name="goals" class="anchor" href="#goals"><span class="octicon octicon-link"></span></a>Goals</h2>
+
+<p>The goal of the DBMagic project is to make iPython talk to data.</p>
+
+<p>DBMagic will make iPython speak:</p>
+
+<ul>
+<li>Natively (in the language of the data)</li>
+<li>Fluently (with the same deft handling that comes with connections to <a href="http://ipython.org/ipython-doc/dev/config/extensions/rmagic.html">R</a>, <a href="http://nbviewer.ipython.org/github/minad/iruby/blob/master/IRuby-Example.ipynb">Ruby</a>, <a href="http://nbviewer.ipython.org/github/JuliaLang/IJulia.jl/blob/master/python/doc/JuliaMagic.ipynb">Julia</a>, and <a href="https://github.com/ipython/ipython/wiki/A-gallery-of-interesting-IPython-Notebooks">many others</a>).</li>
+<li>Intelligently (in a way that makes sense with the data sources they are working with)</li>
+</ul><h2>
+<a name="audience" class="anchor" href="#audience"><span class="octicon octicon-link"></span></a>Audience</h2>
+
+<p>The primary audience of <strong><code>DBmagic</code></strong> are people who work with data and with iPython notebook.  Typically this is a technical audience, but one that is less interested in code and more interested in getting things done and being able to share their code.</p>
+
+<h2>
+<a name="challenges" class="anchor" href="#challenges"><span class="octicon octicon-link"></span></a>Challenges</h2>
+
+<p>One of the primary challenges in doing Data Science and Engineering is that the tools are typically designed by computer scientist and software-oriented people.  They make great tools, but they don't always make sense for working with data.</p>
+
+<p>For example, imagine a situatuation where you have a Terabyte of data sitting on a remote server inside a data store of some sort (SQL, NoSQL, Hadoop).  It would be silly for us to think that we should transfer all (or even some) of that data fom the remote server if we are trying to make an efficient, production-ready process.  Typically data transfer and I/O consumes 75% or more of the time it takes to complete a data-intensive process, and this is wasted time.</p>
+
+<p>At the same time, often the people who know most about the data don't know (or don't care to learn) yet another programming language so they can manipulate their data.  They are interested in the data, not the tools, and all too often they would rather stick with difficult, archaic tools that they know rather than learn the newest thing.</p>
+
+<h2>
+<a name="supported-platforms" class="anchor" href="#supported-platforms"><span class="octicon octicon-link"></span></a>Supported Platforms</h2>
+
+<p>DBMagic currently supports ODBC database connections.  This was chosen because it is a widely-used format with a lot of flexibility and connection options. The downside (and it is well understood) is that that ODBC is harder to use for non-Windows platforms (although I developed this completely on a Mac).</p>
+
+<p>See the roadmap section for more details on expansion.</p>
+
+<h2>
+<a name="design" class="anchor" href="#design"><span class="octicon octicon-link"></span></a>Design</h2>
+
+<p>The primary design goal of <strong><code>DBmagic</code></strong> is to make it possible to retrieve data with the simplest possible syntax and without requiring knowledge of the underlying python packages.</p>
+
+<p>Instead of having code that looks like:</p>
+
+<pre><code>import pyodbc 
+
+# Information on where the data actually resides
+demo_db="MY_DB"                                     
+
+# ODBC Connection Information
+dsn = "MY_SRC"                                                  
+pw = "LbhCrrxrqFarnxlUnpxre".encode('rot13')                           
+odbc_connection_string = 'DSN=%s;PWD=%s;DB=%s' % (dsn, pw, demo_db ) 
+
+cnxn = pyodbc.connect(odbc_connection_string) 
+cursor = cnxn.cursor()
+
+for row in cursor.tables():
+    print row.table_name
+</code></pre>
+
+<p>I believe that people who work with data would rather write code that
+looks like:</p>
+
+<pre><code>%db SELECT * FROM my_table 
+</code></pre>
+
+<p>or </p>
+
+<pre><code>%%db MY_DB
+
+SELECT
+    *
+FROM
+    my_table
+</code></pre>
+
+<h2>
+<a name="documentation" class="anchor" href="#documentation"><span class="octicon octicon-link"></span></a>Documentation</h2>
+
+<p>There are several options for documentation.</p>
+
+<ol>
+<li>There is internal documentation within iPython using <code>?%db</code> option.</li>
+<li>There is a lengthy <a href="https://github.com/morgango/db_magic/blob/master/odbc_unit_tests.ipynb">tutorial</a> available that walks through how to use the library in a very detailed way.</li>
+<li>The <a href="https://github.com/morgango/db_magic/blob/master/odbc_unit_tests.ipynb">unit tests</a> are available as an iPython notebook, you can see exactly how I use the code myself.</li>
+</ol><h2>
+<a name="roadmap" class="anchor" href="#roadmap"><span class="octicon octicon-link"></span></a>Roadmap</h2>
+
+<p>The strategy for picking platforms to support follows the <a href="http://en.wikipedia.org/wiki/Pareto_principle">Pareto Principle</a>. We are going to go with what is most popular first, then add in support for niche-platforms on an as-needed basis.</p>
+
+<p>In the near-term roadmap we will be adding support for JDBC. This is another widely popular protocol that is more native to the *NIX platform and has a lot of free drivers available.  In addition, JDBC is gaining support for non-relational databases (such as <a href="https://cwiki.apache.org/confluence/display/Hive/HiveJDBCInterface">Hive</a>, <a href="http://www.cloudera.com/content/cloudera/en/products-and-services/cdh/impala.html">Impala</a>, <a href="http://www.hbql.com/examples/jdbc.html">HBase</a>, and <a href="http://www.neo4j.org/develop/tools/jdbc">Neo4j</a>).  I will need to do some work to make this happen, but it shouldn't be too different from the initial ODBC release.</p>
+
+<p>Between ODBC and JDBC, we will be covering a wide swath of the database landscape.  After that, I hope to make the underlying library modular enough that it would be easy to add support without having to modify the underlying source code too much. Definitely not there yet.</p>
 
 <h3>
-<a name="unit-tests" class="anchor" href="#unit-tests"><span class="octicon octicon-link"></span></a>Unit Tests</h3>
+<a name="nosql-databases" class="anchor" href="#nosql-databases"><span class="octicon octicon-link"></span></a>NoSQL Databases</h3>
 
-<p>There are unit tests available <a href="http://nbviewer.ipython.org/github/morgango/db_magic/blob/master/odbc_unit_tests.ipynb">here</a></p>
+<p>I will be adding support for NoSQL databases at some point in the future. By market share, it seems like <a href="http://mongodb.com">MongoDB</a> and <a href="http://cassandra.apache.org">Cassandra</a> would be the place to start. No promises here.</p>
+
+<p>I really like <a href="http://elasticsearch.org">Elasticsearch</a> and would be inclined to build something for it simply out of personal preference. This would be something good to do after the library is modular enough. </p>
+
+<h2>
+<a name="testing" class="anchor" href="#testing"><span class="octicon octicon-link"></span></a>Testing</h2>
+
+<p>There are unit tests available <a href="http://nbviewer.ipython.org/github/morgango/db_magic/blob/master/odbc_unit_tests.ipynb">here</a>.  These are all in an iPython notebook, using <a href="http://nbviewer.ipython.org/github/swcarpentry/2012-11-scripps/blob/master/python/testing-with-nose.ipynb">iPython Nose</a>.</p>
+
+<h1></h1>
         </section>
 
         <footer>
