@@ -87,3 +87,5 @@ I really like [Elasticsearch](http://elasticsearch.org) and would be inclined to
 
 There are unit tests available [here](http://nbviewer.ipython.org/github/morgango/db_magic/blob/master/odbc_unit_tests.ipynb).  These are all in an iPython notebook, using [iPython Nose](http://nbviewer.ipython.org/github/swcarpentry/2012-11-scripps/blob/master/python/testing-with-nose.ipynb).
 
+
+======
