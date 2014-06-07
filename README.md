@@ -1,6 +1,6 @@
 ## Goals
 
-The goal of the DBMagic project is to make iPython talk to data.
+The goal of the DBMagic project is to make iPython speak to data.
 
 DBMagic will make iPython speak:
 * Natively (in the language of the data)
