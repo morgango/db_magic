@@ -61,12 +61,22 @@ or
     FROM
         my_table
 
+## Installation and Loading
+
+In your iPython window, run the command:
+
+    %install_ext https://github.com/morgango/db_magic/blob/master/db.py
+
+You can then load the library with the command:
+
+    %load_ext db
+
 ## Documentation
 
 There are several options for documentation.
 
 1. There is internal documentation within iPython using `?%db` option.
-1. There is a lengthy [tutorial](http://nbviewer.ipython.org/github/morgango/db_magic/blob/master/odbc_unit_tests.ipynb) available that walks through how to use the library in a very detailed way.
+1. There is a lengthy [tutorial](http://nbviewer.ipython.org/github/morgango/db_magic/blob/master/db_magic_cookbook.ipynb) available that walks through how to use the library in a very detailed way.
 1. The [unit tests](http://nbviewer.ipython.org/github/morgango/db_magic/blob/master/odbc_unit_tests.ipynb) are available as an iPython notebook, you can see exactly how I use the code myself.
 
 
