@@ -45,7 +45,7 @@
 </ul><h2>
 <a name="audience" class="anchor" href="#audience"><span class="octicon octicon-link"></span></a>Audience</h2>
 
-<p>The primary audience of <strong><code>DBmagic</code></strong> are people who work with data and with iPython notebook.  Typically this is a technical audience, but one that is less interested in code and more interested in getting things done and being able to share their code.</p>
+<p>The primary audience of DBmagic are people who work with data and with iPython notebook.  Typically this is a technical audience, but one that is less interested in code and more interested in getting things done and being able to share their code.</p>
 
 <h2>
 <a name="challenges" class="anchor" href="#challenges"><span class="octicon octicon-link"></span></a>Challenges</h2>
@@ -54,7 +54,9 @@
 
 <p>For example, imagine a situatuation where you have a Terabyte of data sitting on a remote server inside a data store of some sort (SQL, NoSQL, Hadoop).  It would be silly for us to think that we should transfer all (or even some) of that data fom the remote server if we are trying to make an efficient, production-ready process.  Typically data transfer and I/O consumes 75% or more of the time it takes to complete a data-intensive process, and this is wasted time.</p>
 
-<p>At the same time, often the people who know most about the data don't know (or don't care to learn) yet another programming language so they can manipulate their data.  They are interested in the data, not the tools, and all too often they would rather stick with difficult, archaic tools that they know rather than learn the newest thing.</p>
+<p>Python expects that you will either move data to the local machine to do work, or learn enough to use the computer-science based packages that provide remote access to machines (like <a href="https://code.google.com/p/pyodbc/">pyODBC</a> or <a href="https://pypi.python.org/pypi/JayDeBeApi/">JayDeBeeAPI</a>.  If you are already a developer, then that isn't a bit deal.  However, often the people who know most about the data don't know (or don't care to learn) yet another programming language so they can manipulate their data.  They are interested in the data, not the tools, and all too often they would rather stick with difficult, archaic tools that they know rather than learn the newest thing.</p>
+
+<p>The fundamental challenge is for iPython to speak to the data in the right place, with the right langage, at the right time.  DBMagic is all about doing just that.</p>
 
 <h2>
 <a name="supported-platforms" class="anchor" href="#supported-platforms"><span class="octicon octicon-link"></span></a>Supported Platforms</h2>
@@ -70,17 +72,17 @@
 
 <p>Instead of having code that looks like:</p>
 
-<pre><code>import pyodbc 
+<pre><code>import pyodbc
 
 # Information on where the data actually resides
-demo_db="MY_DB"                                     
+demo_db="MY_DB"
 
 # ODBC Connection Information
-dsn = "MY_SRC"                                                  
-pw = "LbhCrrxrqFarnxlUnpxre".encode('rot13')                           
+dsn = "MY_SRC"
+pw = "LbhCrrxrqFarnxlUnpxre".encode('rot13')
 odbc_connection_string = 'DSN=%s;PWD=%s;DB=%s' % (dsn, pw, demo_db ) 
 
-cnxn = pyodbc.connect(odbc_connection_string) 
+cnxn = pyodbc.connect(odbc_connection_string)
 cursor = cnxn.cursor()
 
 for row in cursor.tables():
@@ -114,6 +116,19 @@ FROM
 <p>You can then load the library with the command:</p>
 
 <pre><code>%load_ext db
+</code></pre>
+
+<p>You should be able to run a simple command, like:</p>
+
+<pre><code>%db --list sources
+</code></pre>
+
+<h2>
+<a name="requirements" class="anchor" href="#requirements"><span class="octicon octicon-link"></span></a>Requirements</h2>
+
+<p>DBMagic requires the <a href="https://code.google.com/p/pyodbc/">pyODBC</a> package for access to ODBC databases.  You should be able to install it from the command line with:</p>
+
+<pre><code>pip install pyodbc
 </code></pre>
 
 <h2>
