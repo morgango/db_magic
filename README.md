@@ -9,7 +9,7 @@ DBMagic will make iPython speak:
 
 ## Audience
 
-The primary audience of **`DBmagic`** are people who work with data and with iPython notebook.  Typically this is a technical audience, but one that is less interested in code and more interested in getting things done and being able to share their code.
+The primary audience of DBmagic are people who work with data and with iPython notebook.  Typically this is a technical audience, but one that is less interested in code and more interested in getting things done and being able to share their code.
 
 ## Challenges
 
@@ -17,8 +17,10 @@ One of the primary challenges in doing Data Science and Engineering is that the 
 
 For example, imagine a situatuation where you have a Terabyte of data sitting on a remote server inside a data store of some sort (SQL, NoSQL, Hadoop).  It would be silly for us to think that we should transfer all (or even some) of that data fom the remote server if we are trying to make an efficient, production-ready process.  Typically data transfer and I/O consumes 75% or more of the time it takes to complete a data-intensive process, and this is wasted time.
 
-At the same time, often the people who know most about the data don't know (or don't care to learn) yet another programming language so they can manipulate their data.  They are interested in the data, not the tools, and all too often they would rather stick with difficult, archaic tools that they know rather than learn the newest thing.
+Python expects that you will either move data to the local machine to do work, or learn enough to use the computer-science based packages that provide remote access to machines (like [pyODBC](https://code.google.com/p/pyodbc/) or [JayDeBeeAPI](https://pypi.python.org/pypi/JayDeBeApi/).  If you are already a developer, then that isn't a bit deal.  However, often the people who know most about the data don't know (or don't care to learn) yet another programming language so they can manipulate their data.  They are interested in the data, not the tools, and all too often they would rather stick with difficult, archaic tools that they know rather than learn the newest thing.
  
+The fundamental challenge is for iPython to speak to the data in the right place, with the right langage, at the right time.  DBMagic is all about doing just that.
+
 ## Supported Platforms
 
 DBMagic currently supports ODBC database connections.  This was chosen because it is a widely-used format with a lot of flexibility and connection options. The downside (and it is well understood) is that that ODBC is harder to use for non-Windows platforms (although I developed this completely on a Mac).
@@ -31,17 +33,17 @@ The primary design goal of **`DBmagic`** is to make it possible to retrieve data
 
 Instead of having code that looks like:
 
-    import pyodbc 
+    import pyodbc
 
     # Information on where the data actually resides
-    demo_db="MY_DB"                                     
+    demo_db="MY_DB"
 
     # ODBC Connection Information
-    dsn = "MY_SRC"                                                  
-    pw = "LbhCrrxrqFarnxlUnpxre".encode('rot13')                           
+    dsn = "MY_SRC"
+    pw = "LbhCrrxrqFarnxlUnpxre".encode('rot13')
     odbc_connection_string = 'DSN=%s;PWD=%s;DB=%s' % (dsn, pw, demo_db ) 
 
-    cnxn = pyodbc.connect(odbc_connection_string) 
+    cnxn = pyodbc.connect(odbc_connection_string)
     cursor = cnxn.cursor()
 
     for row in cursor.tables():
@@ -71,6 +73,16 @@ You can then load the library with the command:
 
     %load_ext db
 
+You should be able to run a simple command, like:
+
+    %db --list sources
+
+## Requirements
+
+DBMagic requires the [pyODBC](https://code.google.com/p/pyodbc/) package for access to ODBC databases.  You should be able to install it from the command line with:
+
+    pip install pyodbc
+
 ## Documentation
 
 There are several options for documentation.
@@ -96,4 +108,3 @@ I really like [Elasticsearch](http://elasticsearch.org) and would be inclined to
 ## Testing
 
 There are unit tests available [here](http://nbviewer.ipython.org/github/morgango/db_magic/blob/master/odbc_unit_tests.ipynb).  These are all in an iPython notebook, using [iPython Nose](http://nbviewer.ipython.org/github/swcarpentry/2012-11-scripps/blob/master/python/testing-with-nose.ipynb).
-
