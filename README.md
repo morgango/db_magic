@@ -67,7 +67,7 @@ or
 
 In your iPython window, run the command:
 
-    %install_ext https://github.com/morgango/db_magic/blob/master/db.py
+    %install_ext https://raw.githubusercontent.com/morgango/db_magic/master/db.py
 
 You can then load the library with the command:
 
