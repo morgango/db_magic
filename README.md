@@ -21,12 +21,6 @@ Python expects that you will either move data to the local machine to do work, o
  
 The fundamental challenge is for iPython to speak to the data in the right place, with the right langage, at the right time.  DBMagic is all about doing just that.
 
-## Supported Platforms
-
-DBMagic currently supports ODBC database connections.  This was chosen because it is a widely-used format with a lot of flexibility and connection options. The downside (and it is well understood) is that that ODBC is harder to use for non-Windows platforms (although I developed this completely on a Mac).
-
-See the roadmap section for more details on expansion.
-
 ## Design
 
 The primary design goal of **`DBmagic`** is to make it possible to retrieve data with the simplest possible syntax and without requiring knowledge of the underlying python packages.
@@ -63,6 +57,18 @@ or
     FROM
         my_table
 
+## Supported Platforms
+
+### Client Platforms
+
+DBMagic should be able to run on any platform that supports iPython and the underlying packages that it utilizes (ODBC and JDBC).  This has been tested on Mac OS X and Windows.
+
+### Connection Protocols
+
+DBMagic currently supports ODBC database connections.  This was chosen because it is a widely-used format with a lot of flexibility and connection options. The downside (and it is well understood) is that that ODBC is harder to use for non-Windows platforms (although I developed this completely on a Mac).
+
+See the roadmap section for more details on expansion.
+
 ## Installation and Loading
 
 In your iPython window, run the command:
@@ -77,13 +83,15 @@ You should be able to run a simple command, like:
 
     %db --list sources
 
+I have seen it where you need to restart the kernel after installing the extension and/or pyODBC.
+
 ## Requirements
 
 DBMagic requires the [pyODBC](https://code.google.com/p/pyodbc/) package for access to ODBC databases.  You should be able to install it from the command line with:
 
     pip install pyodbc
 
-If you are running on the Windows platform, you will need to install the [pyODBC binary](https://code.google.com/p/pyodbc/downloads/list) appropriate to the O/S that you are running.
+If you are running on the Windows platform, you may need to install the [pyODBC binary](https://code.google.com/p/pyodbc/downloads/list) appropriate to the O/S that you are running.
 
 ## Documentation
 
@@ -97,6 +105,7 @@ There are several options for documentation.
 ## Roadmap
 The strategy for picking platforms to support follows the [Pareto Principle](http://en.wikipedia.org/wiki/Pareto_principle). We are going to go with what is most popular first, then add in support for niche-platforms on an as-needed basis.
 
+### Connection Platforms
 In the near-term roadmap we will be adding support for JDBC. This is another widely popular protocol that is more native to the \*NIX platform and has a lot of free drivers available.  In addition, JDBC is gaining support for non-relational databases (such as [Hive](https://cwiki.apache.org/confluence/display/Hive/HiveJDBCInterface), [Impala](http://www.cloudera.com/content/cloudera/en/products-and-services/cdh/impala.html), [HBase](http://www.hbql.com/examples/jdbc.html), and [Neo4j](http://www.neo4j.org/develop/tools/jdbc)).  I will need to do some work to make this happen, but it shouldn't be too different from the initial ODBC release.
 
 Between ODBC and JDBC, we will be covering a wide swath of the database landscape.  After that, I hope to make the underlying library modular enough that it would be easy to add support without having to modify the underlying source code too much. Definitely not there yet.
