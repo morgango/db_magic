@@ -23,7 +23,7 @@ The fundamental challenge is for iPython to speak to the data in the right place
 
 ## Design
 
-The primary design goal of **`DBmagic`** is to make it possible to retrieve data with the simplest possible syntax and without requiring knowledge of the underlying python packages.
+The primary design goal of DBmagic is to make it possible to retrieve data with the simplest possible syntax and without requiring knowledge of the underlying python packages.
 
 Instead of having code that looks like:
 
