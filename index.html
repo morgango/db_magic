@@ -59,13 +59,6 @@
 <p>The fundamental challenge is for iPython to speak to the data in the right place, with the right langage, at the right time.  DBMagic is all about doing just that.</p>
 
 <h2>
-<a name="supported-platforms" class="anchor" href="#supported-platforms"><span class="octicon octicon-link"></span></a>Supported Platforms</h2>
-
-<p>DBMagic currently supports ODBC database connections.  This was chosen because it is a widely-used format with a lot of flexibility and connection options. The downside (and it is well understood) is that that ODBC is harder to use for non-Windows platforms (although I developed this completely on a Mac).</p>
-
-<p>See the roadmap section for more details on expansion.</p>
-
-<h2>
 <a name="design" class="anchor" href="#design"><span class="octicon octicon-link"></span></a>Design</h2>
 
 <p>The primary design goal of <strong><code>DBmagic</code></strong> is to make it possible to retrieve data with the simplest possible syntax and without requiring knowledge of the underlying python packages.</p>
@@ -106,6 +99,21 @@ FROM
 </code></pre>
 
 <h2>
+<a name="supported-platforms" class="anchor" href="#supported-platforms"><span class="octicon octicon-link"></span></a>Supported Platforms</h2>
+
+<h3>
+<a name="client-platforms" class="anchor" href="#client-platforms"><span class="octicon octicon-link"></span></a>Client Platforms</h3>
+
+<p>DBMagic should be able to run on any platform that supports iPython and the underlying packages that it utilizes (ODBC and JDBC).  This has been tested on Mac OS X and Windows.</p>
+
+<h3>
+<a name="connection-protocols" class="anchor" href="#connection-protocols"><span class="octicon octicon-link"></span></a>Connection Protocols</h3>
+
+<p>DBMagic currently supports ODBC database connections.  This was chosen because it is a widely-used format with a lot of flexibility and connection options. The downside (and it is well understood) is that that ODBC is harder to use for non-Windows platforms (although I developed this completely on a Mac).</p>
+
+<p>See the roadmap section for more details on expansion.</p>
+
+<h2>
 <a name="installation-and-loading" class="anchor" href="#installation-and-loading"><span class="octicon octicon-link"></span></a>Installation and Loading</h2>
 
 <p>In your iPython window, run the command:</p>
@@ -123,6 +131,8 @@ FROM
 <pre><code>%db --list sources
 </code></pre>
 
+<p>I have seen it where you need to restart the kernel after installing the extension and/or pyODBC.</p>
+
 <h2>
 <a name="requirements" class="anchor" href="#requirements"><span class="octicon octicon-link"></span></a>Requirements</h2>
 
@@ -131,7 +141,7 @@ FROM
 <pre><code>pip install pyodbc
 </code></pre>
 
-<p>If you are running on the Windows platform, you will need to install the <a href="https://code.google.com/p/pyodbc/downloads/list">pyODBC binary</a> appropriate to the O/S that you are running.</p>
+<p>If you are running on the Windows platform, you may need to install the <a href="https://code.google.com/p/pyodbc/downloads/list">pyODBC binary</a> appropriate to the O/S that you are running.</p>
 
 <h2>
 <a name="documentation" class="anchor" href="#documentation"><span class="octicon octicon-link"></span></a>Documentation</h2>
@@ -146,6 +156,9 @@ FROM
 <a name="roadmap" class="anchor" href="#roadmap"><span class="octicon octicon-link"></span></a>Roadmap</h2>
 
 <p>The strategy for picking platforms to support follows the <a href="http://en.wikipedia.org/wiki/Pareto_principle">Pareto Principle</a>. We are going to go with what is most popular first, then add in support for niche-platforms on an as-needed basis.</p>
+
+<h3>
+<a name="connection-platforms" class="anchor" href="#connection-platforms"><span class="octicon octicon-link"></span></a>Connection Platforms</h3>
 
 <p>In the near-term roadmap we will be adding support for JDBC. This is another widely popular protocol that is more native to the *NIX platform and has a lot of free drivers available.  In addition, JDBC is gaining support for non-relational databases (such as <a href="https://cwiki.apache.org/confluence/display/Hive/HiveJDBCInterface">Hive</a>, <a href="http://www.cloudera.com/content/cloudera/en/products-and-services/cdh/impala.html">Impala</a>, <a href="http://www.hbql.com/examples/jdbc.html">HBase</a>, and <a href="http://www.neo4j.org/develop/tools/jdbc">Neo4j</a>).  I will need to do some work to make this happen, but it shouldn't be too different from the initial ODBC release.</p>
 
