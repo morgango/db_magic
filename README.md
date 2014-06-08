@@ -105,7 +105,7 @@ There are several options for documentation.
 ## Roadmap
 The strategy for picking platforms to support follows the [Pareto Principle](http://en.wikipedia.org/wiki/Pareto_principle). We are going to go with what is most popular first, then add in support for niche-platforms on an as-needed basis.
 
-### Connection Platforms
+### Connection Protocols
 In the near-term roadmap we will be adding support for JDBC. This is another widely popular protocol that is more native to the \*NIX platform and has a lot of free drivers available.  In addition, JDBC is gaining support for non-relational databases (such as [Hive](https://cwiki.apache.org/confluence/display/Hive/HiveJDBCInterface), [Impala](http://www.cloudera.com/content/cloudera/en/products-and-services/cdh/impala.html), [HBase](http://www.hbql.com/examples/jdbc.html), and [Neo4j](http://www.neo4j.org/develop/tools/jdbc)).  I will need to do some work to make this happen, but it shouldn't be too different from the initial ODBC release.
 
 Between ODBC and JDBC, we will be covering a wide swath of the database landscape.  After that, I hope to make the underlying library modular enough that it would be easy to add support without having to modify the underlying source code too much. Definitely not there yet.
