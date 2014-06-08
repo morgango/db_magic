@@ -83,6 +83,8 @@ DBMagic requires the [pyODBC](https://code.google.com/p/pyodbc/) package for acc
 
     pip install pyodbc
 
+If you are running on the Windows platform, you will need to install the [pyODBC binary](https://code.google.com/p/pyodbc/downloads/list) appropriate to the O/S that you are running.
+
 ## Documentation
 
 There are several options for documentation.
