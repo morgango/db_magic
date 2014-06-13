@@ -57,6 +57,20 @@ or
     FROM
         my_table
 
+### Comparisons
+
+I have seen similar projects to this one, including [iPython-SQL](https://github.com/catherinedevlin/ipython-sql) and [Query](https://github.com/boydgreenfield/query).  Both of these are great tools and the authors have done excellent work.  You absolutely should check them out and see if they work better for your needs. %sql was an inspiration in writing this package, I only discovered query after I was in QA for this package but it looks really interesting.
+
+I am building DBMagic from the perspective of dealing with big, heterogeneous data sources that requires the ability to issue native, well supported commands.  
+
+I looked at both of these tools and found that in my own work, I would be limited by:
+
+- The platforms that I need to access (SQLAlchemy doesn't seem to have native dialects for Netezza, Teradata, Hive, Impala, AsterData, Elasticsearch, Hbase, etc.) 
+- The way that I write my code (I don't want to write Python to get to data unless it helps me somehow)
+- The way that I access the data (an Hbase or Elasticsearch query looks and behaves nothing like SQL)
+
+Honestly, I thought it would be more fun to write this package rather than to write SQLAlchemy dialects, so I did this.
+
 ## Supported Platforms
 
 ### Client Platforms
