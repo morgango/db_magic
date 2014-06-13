@@ -98,6 +98,21 @@ FROM
     my_table
 </code></pre>
 
+<h3>
+<a name="comparisons" class="anchor" href="#comparisons"><span class="octicon octicon-link"></span></a>Comparisons</h3>
+
+<p>I have seen similar projects to this one, including <a href="https://github.com/catherinedevlin/ipython-sql">iPython-SQL</a> and <a href="https://github.com/boydgreenfield/query">Query</a>.  Both of these are great tools and the authors have done excellent work.  You absolutely should check them out and see if they work better for your needs. %sql was an inspiration in writing this package, I only discovered query after I was in QA for this package but it looks really interesting.</p>
+
+<p>I am building DBMagic from the perspective of dealing with big, heterogeneous data sources that requires the ability to issue native, well supported commands.  </p>
+
+<p>I looked at both of these tools and found that in my own work, I would be limited by:</p>
+
+<ul>
+<li>The platforms that I need to access (SQLAlchemy doesn't seem to have native dialects for Netezza, Teradata, Hive, Impala, AsterData, Elasticsearch, Hbase, etc.) </li>
+<li>The way that I write my code (I don't want to write Python to get to data unless it helps me somehow)</li>
+<li>The way that I access the data (an Hbase or Elasticsearch query looks and behaves nothing like SQL)</li>
+</ul><p>Honestly, I thought it would be more fun to write this package rather than to write SQLAlchemy dialects, so I did this.</p>
+
 <h2>
 <a name="supported-platforms" class="anchor" href="#supported-platforms"><span class="octicon octicon-link"></span></a>Supported Platforms</h2>
 
