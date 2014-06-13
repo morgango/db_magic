@@ -132,6 +132,10 @@ I will be adding support for NoSQL databases at some point in the future. By mar
 
 I really like [Elasticsearch](http://elasticsearch.org) and would be inclined to build something for it simply out of personal preference. This would be something good to do after the library is modular enough. 
 
+### UI Improvements
+
+I would like to add support for multiple queries in the same cell (probably separated by semi-colons) as well as tab completion for SQL syntax, table names, etc.  Not sure exactly where/when these will fit. 
+
 ## Testing
 
 There are unit tests available [here](http://nbviewer.ipython.org/github/morgango/db_magic/blob/master/odbc_unit_tests.ipynb).  These are all in an iPython notebook, using [iPython Nose](http://nbviewer.ipython.org/github/swcarpentry/2012-11-scripps/blob/master/python/testing-with-nose.ipynb).
