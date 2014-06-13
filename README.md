@@ -98,7 +98,7 @@ If you are running on the Windows platform, you may need to install the [pyODBC 
 There are several options for documentation.
 
 1. There is internal documentation within iPython using `?%db` option.
-1. There is a [quickstart](http://nbviewer.ipython.org/github/morgango/db_magic/blob/master/db_magic_quickstart.ipynb) available that walks through how to use the library in a very detailed way.
+1. There is a [quickstart](http://nbviewer.ipython.org/github/morgango/db_magic/blob/master/db_magic_quickstart.ipynb) available that gets you started as quickly as possible. 
 1. There is a lengthy [tutorial](http://nbviewer.ipython.org/github/morgango/db_magic/blob/master/db_magic_cookbook.ipynb) available that walks through how to use the library in a very detailed way.
 1. There is a [troubleshooting guide](http://nbviewer.ipython.org/github/morgango/db_magic/blob/master/db_magic_troubleshooting.ipynb) available that walks through how to use the library in a very detailed way.
 1. The [unit tests](http://nbviewer.ipython.org/github/morgango/db_magic/blob/master/db_magic_odbc_unit_tests.ipynb) are available as an iPython notebook, you can see exactly how I use the code myself.
